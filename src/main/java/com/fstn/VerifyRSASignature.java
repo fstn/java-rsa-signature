@@ -8,6 +8,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.KeyPair;
 import java.security.Signature;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class VerifyRSASignature
 {
@@ -20,6 +23,8 @@ public class VerifyRSASignature
     public static void setKeyPair(KeyPair keyPair) {
         VerifyRSASignature.keyPair = keyPair;
     }
+
+    private static Logger logger = Logger.getLogger(VerifyRSASignature.class.getName());
 
     /**
      *
@@ -43,7 +48,23 @@ public class VerifyRSASignature
     }
 
     /**
-     *
+     * checkSignature with string
+     * @param sig
+     * @param input
+     * @return
+     * @throws Exception
+     */
+    public static boolean checkSignature(String sig, String input) throws Exception {
+        if(sig != null && !sig.isEmpty() ) {
+            return VerifyRSASignature.checkSignature(Base64.getDecoder().decode(sig), input);
+        }else{
+            logger.log(Level.WARNING,"empty signature");
+            return false;
+        }
+    }
+
+    /**
+     * checkSignature with byte[]
      * @param sig
      * @param input
      * @return

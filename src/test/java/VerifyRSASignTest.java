@@ -11,7 +11,7 @@ import java.util.Base64;
 public class VerifyRSASignTest
 {
     //language=json
-    String json ="{\"name\":\"admin\",\"principals\":[{\"repositoryname\":\"dss-default\",\"name\":\"admin\"," +
+    String json = "{\"name\":\"admin\",\"principals\":[{\"repositoryname\":\"dss-default\",\"name\":\"admin\"," +
         "\"nativeprincipal\":{\"authenticated\":true,\"name\":\"admin\",\"anonymous\":false," +
         "\"tenantidentifier\":{\"id\":-100,\"class\":[\"eu.w4.engine.client.TenantIdentifier\",\"java.io" +
         ".Serializable\"]},\"id\":\"18a6b5bc-528d-4071-8694-0f017708e4b8\"," +
@@ -54,6 +54,7 @@ public class VerifyRSASignTest
 
     /**
      * Simple test
+     *
      * @throws Exception
      */
     @Test
@@ -61,7 +62,7 @@ public class VerifyRSASignTest
         VerifyRSASignature.setKeyPair(KeyManager.getInstance().getKeys());
         //to add in login
         byte[] sig = VerifyRSASignature.genSignature(json);
-        Assert.assertEquals(sig.length,128);
+        Assert.assertEquals(sig.length, 128);
         //to add inside after principal
         byte[] encryptedByteValue = Base64.getEncoder().encode(sig);
         String signatureAsString = new String(encryptedByteValue, "UTF-8");
@@ -72,6 +73,7 @@ public class VerifyRSASignTest
 
     /**
      * Trying to manipulate signature
+     *
      * @throws Exception
      */
     @Test
@@ -79,35 +81,37 @@ public class VerifyRSASignTest
         VerifyRSASignature.setKeyPair(KeyManager.getInstance().getKeys());
 
         byte[] sig = VerifyRSASignature.genSignature(json);
-        Assert.assertEquals(sig.length,128);
+        Assert.assertEquals(sig.length, 128);
 
         byte[] encryptedByteValue = Base64.getEncoder().encode(sig);
         String signatureAsString = new String(encryptedByteValue, "UTF-8");
 
         Assert.assertEquals("Bj/Jykb7f+bW1Lu/oKQDHnt1+i9gl5iO8Y1/txiuFoM+NUnQZpe/gZsz8lo8qExgMEahEXZuDnfxpdnv" +
-                                "+9WjBcXjiXy12zf0VfZROrZ+UjlqB+S9EWCMG0jp1GyyO3Qo0pXpAL4pJ0wdOOPi4JkenhDsKzUSSTPY4ljILDP7i50=",signatureAsString);
+                                "+9WjBcXjiXy12zf0VfZROrZ+UjlqB+S9EWCMG0jp1GyyO3Qo0pXpAL4pJ0wdOOPi4JkenhDsKzUSSTPY4ljILDP7i50=",
+                            signatureAsString);
 
-
-        boolean isPrincipalUntouched = VerifyRSASignature.checkSignature(Base64.getDecoder().decode(signatureAsString), json);
-        Assert.assertTrue("signature is ok",isPrincipalUntouched);
+        boolean isPrincipalUntouched = VerifyRSASignature.checkSignature(Base64.getDecoder().decode(signatureAsString),
+                                                                         json);
+        Assert.assertTrue("signature is ok", isPrincipalUntouched);
 
         /**
          * Trying to modify signature
          */
         signatureAsString = "Bj/Jykb7f+bW1Lu/oKQDHnt1+i9gl5iO8Y1/txiuFoM+NUnQZpe/gZsz8lo8qExgMEahEXZuDnfxpdnv"
-            +"+9WjBcXjiXy12zf0VfZROrZ+UjlqB+S9EWCMG0jp1GyyO3Qo0pXpAL4pJ0wdOOPi4JkenhDsKzUSSTPY4ljILDP7i49=";
-        isPrincipalUntouched = VerifyRSASignature.checkSignature(Base64.getDecoder().decode(signatureAsString), json);
-        Assert.assertFalse("signature is ko, validate must not be validate",isPrincipalUntouched);
+            + "+9WjBcXjiXy12zf0VfZROrZ+UjlqB+S9EWCMG0jp1GyyO3Qo0pXpAL4pJ0wdOOPi4JkenhDsKzUSSTPY4ljILDP7i49=";
+        isPrincipalUntouched = VerifyRSASignature.checkSignature(signatureAsString, json);
+        Assert.assertFalse("signature is ko, validate must not be validate", isPrincipalUntouched);
     }
 
     /**
      * Trying to manipulate content
+     *
      * @throws Exception
      */
     @Test
     public void simpleHackTest() throws Exception {
         //language=json
-        String hackedJson ="{\"name\":\"admin\",\"principals\":[{\"repositoryname\":\"dss-default\"," +
+        String hackedJson = "{\"name\":\"admin\",\"principals\":[{\"repositoryname\":\"dss-default\"," +
             "\"name\":\"admin\"," +
             "\"nativeprincipal\":{\"authenticated\":true,\"name\":\"admin\",\"anonymous\":false," +
             "\"tenantidentifier\":{\"id\":-100,\"class\":[\"eu.w4.engine.client.TenantIdentifier\",\"java.io" +
@@ -152,15 +156,21 @@ public class VerifyRSASignTest
         VerifyRSASignature.setKeyPair(KeyManager.getInstance().getKeys());
         //deplace inside login
         byte[] sig = VerifyRSASignature.genSignature(json);
-        Assert.assertEquals(sig.length,128);
-
+        Assert.assertEquals(sig.length, 128);
 
         boolean isPrincipalUntouched = VerifyRSASignature.checkSignature(sig, hackedJson);
-        Assert.assertFalse("Hacked principal must not be validate",isPrincipalUntouched);
+        Assert.assertFalse("Hacked principal must not be validate", isPrincipalUntouched);
     }
 
-
-
-
+    /**
+     * Simple test
+     *
+     * @throws Exception
+     */
+    @Test
+    public void emptySignatureTest() throws Exception {
+        boolean isPrincipalUntouched = VerifyRSASignature.checkSignature("", json);
+        Assert.assertFalse("Empty signature must invalidate principal",isPrincipalUntouched);
+    }
 
 }
